@@ -14,6 +14,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.Set;
 import javax.swing.tree.DefaultMutableTreeNode;
+import jsoneditor.TreeNodeData.NodeType;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,8 +28,9 @@ public class JsonEditor {
 
     /**
      * Initialize a new JsonEditor object with a JSON Schema
+     *
      * @param jsonSchema the JSON schema
-     * @throws FileNotFoundException 
+     * @throws FileNotFoundException
      */
     public JsonEditor(File jsonSchema) throws FileNotFoundException {
         mJsonSchema = jsonSchema;
@@ -37,8 +39,9 @@ public class JsonEditor {
 
     /**
      * Sets JSON data for editing
+     *
      * @param jsonData
-     * @throws FileNotFoundException 
+     * @throws FileNotFoundException
      */
     public void setJsonFile(File jsonData) throws FileNotFoundException {
         mJsonFile = jsonData;
@@ -48,8 +51,9 @@ public class JsonEditor {
 
     /**
      * Sets JSON schema file to define the structure of JSON data
+     *
      * @param jsonSchema schema file
-     * @throws FileNotFoundException 
+     * @throws FileNotFoundException
      */
     public void setJsonSchema(File jsonSchema) throws FileNotFoundException {
         mJsonSchema = jsonSchema;
@@ -58,6 +62,7 @@ public class JsonEditor {
 
     /**
      * Inflates the JSON layout defined by the schema in the tree view
+     *
      * @param node root node of the tree view
      */
     public void inflateJson(DefaultMutableTreeNode node) {
@@ -76,17 +81,21 @@ public class JsonEditor {
             Set<String> keySet = prop.keySet();
             for (String key : keySet) {
                 if (!((JSONObject) json).isNull(key)) {
-                    DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(key);
+                    Object jsonVal = ((JSONObject) json).get(key);
+                    JSONObject schemaVal = (JSONObject) prop.get(key);
+
+                    DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(new TreeNodeData(jsonVal, toEnum((String) schemaVal.get("type")), key));
                     node.add(childNode);
-                    inflate((JSONObject) prop.get(key), ((JSONObject) json).get(key), childNode);
+                    inflate(schemaVal, jsonVal, childNode);
                 }
             }
         } else if (nodeType.equalsIgnoreCase("array")) {
             JSONObject items = (JSONObject) schema.get("items");
             for (int i = 0; i < ((JSONArray) json).length(); i++) {
-                DefaultMutableTreeNode childNode = new DefaultMutableTreeNode("" + (i + 1));
+                Object jsonVal = ((JSONArray) json).get(i);
+                DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(new TreeNodeData(jsonVal, toEnum((String) items.get("type")), "" + (i + 1)));
                 node.add(childNode);
-                inflate(items, ((JSONArray) json).get(i), childNode);
+                inflate(items, jsonVal, childNode);
             }
         } else if (nodeType.equalsIgnoreCase("string")) {
         } else if (nodeType.equalsIgnoreCase("integer")) {
@@ -97,4 +106,21 @@ public class JsonEditor {
     private File mJsonSchema = null;
     private JSONObject mJsonSchemaObj = null;
     private JSONObject mJsonObj = null;
+
+    private static NodeType toEnum(String type) {
+        if (type.equalsIgnoreCase("onject")) {
+            return NodeType.OBJECT;
+        }
+        if (type.equalsIgnoreCase("array")) {
+            return NodeType.ARRAY;
+        }
+        if (type.equalsIgnoreCase("integer")) {
+            return NodeType.INTEGER;
+        }
+        if (type.equalsIgnoreCase("string")) {
+            return NodeType.STRING;
+        }
+
+        return NodeType.UNKNOWN;
+    }
 }
