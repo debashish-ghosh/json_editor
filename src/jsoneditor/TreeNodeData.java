@@ -5,42 +5,40 @@
  */
 package jsoneditor;
 
+import org.json.JSONObject;
+
 /**
  *
  * @author debashish.ghosh
  */
 public class TreeNodeData {
 
-    private Object mJsonNode;
-    private NodeType mNodeType;
-    private String mNodeName;
+    private final JSONObject mSchemaNode;
+    private final Object mJsonNode;
+    private String mNodeTag;
 
-    public TreeNodeData(Object json, NodeType nodeType, String name) {
-        mJsonNode = json;
-        mNodeType = nodeType;
-        mNodeName = name;
+    public TreeNodeData(JSONObject schemaNode, Object jsonNode, String tag) {
+        mSchemaNode = schemaNode;
+        mJsonNode = jsonNode;
+        mNodeTag = tag;
+    }
+    
+    public void setTag(String tag) {
+        mNodeTag = tag;
     }
 
     @Override
     public String toString() {
-        return mNodeName;
+        return mNodeTag;
     }
 
     public String getValue() {
-        switch (mNodeType) {
-            case INTEGER:
-                break;
-            case STRING:
-                break;
+        final String nodeType = mSchemaNode.getString("type");
+        if (nodeType.equalsIgnoreCase("string")) {
+            return ((String) mJsonNode);
+        } else if (nodeType.equalsIgnoreCase("integer")) {
+            return ("" + (int) mJsonNode);
         }
         return null;
-    }
-
-    public static enum NodeType {
-        UNKNOWN,
-        OBJECT,
-        ARRAY,
-        INTEGER,
-        STRING
     }
 }

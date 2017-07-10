@@ -12,6 +12,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JFileChooser;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -23,9 +25,6 @@ import javax.swing.tree.TreeSelectionModel;
  */
 public class JsonEditorDialog extends javax.swing.JDialog {
 
-    private JFileChooser jJsonSchemaChooser = null;
-    private JFileChooser jJsonFileChooser = null;
-
     /**
      * Creates new form JsonEditorDialog
      *
@@ -35,8 +34,24 @@ public class JsonEditorDialog extends javax.swing.JDialog {
     public JsonEditorDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
-        
+
         jJsonTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        jJsonTree.addTreeSelectionListener(new TreeSelectionListener() {
+            @Override
+            public void valueChanged(TreeSelectionEvent e) {
+                DefaultMutableTreeNode node = (DefaultMutableTreeNode) jJsonTree.getLastSelectedPathComponent();
+
+                if (node != null && node.isLeaf()) {
+                    mCurrentData = (TreeNodeData) node.getUserObject();
+                    jJsonValue.setText(mCurrentData.getValue());
+                    jJsonValue.setEnabled(true);
+                } else {
+                    mCurrentData = null;
+                    jJsonValue.setText("");
+                    jJsonValue.setEnabled(false);
+                }
+            }
+        });
     }
 
     /**
@@ -81,6 +96,7 @@ public class JsonEditorDialog extends javax.swing.JDialog {
 
         javax.swing.tree.DefaultMutableTreeNode treeNode1 = new javax.swing.tree.DefaultMutableTreeNode("root");
         jJsonTree.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
+        jJsonTree.setRootVisible(false);
         jScrollPane.setViewportView(jJsonTree);
 
         jButtonNewFile.setText("New File...");
@@ -271,6 +287,9 @@ public class JsonEditorDialog extends javax.swing.JDialog {
 
     private JsonEditor mJsonEditor = null;
     private static final String TITLE = "JSON Editor";
+    private TreeNodeData mCurrentData = null;
+    private JFileChooser jJsonSchemaChooser = null;
+    private JFileChooser jJsonFileChooser = null;
 
     private static class JsonFileFilter extends FileFilter {
 
