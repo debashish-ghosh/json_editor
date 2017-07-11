@@ -189,6 +189,9 @@
       </Events>
     </Component>
     <Component class="javax.swing.JFormattedTextField" name="jJsonValue">
+      <Properties>
+        <Property name="editable" type="boolean" value="false"/>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>

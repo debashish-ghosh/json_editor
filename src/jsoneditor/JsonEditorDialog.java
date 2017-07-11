@@ -42,24 +42,29 @@ public class JsonEditorDialog extends javax.swing.JDialog {
 
         jJsonTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         jJsonTree.addTreeSelectionListener((TreeSelectionEvent) -> {
+            jButtonEditVal.setText("Edit");
+            jJsonValue.setEditable(false);
+
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) jJsonTree.getLastSelectedPathComponent();
 
             if (node != null && node.isLeaf()) {
+                jJsonValue.setValue(null);
+
                 mCurrentData = (TreeNodeData) node.getUserObject();
                 if (mCurrentData.isInt()) {
                     jJsonValue.setFormatterFactory(new DefaultFormatterFactory(numberFormatter));
                 } else {
                     jJsonValue.setFormatterFactory(mDefaultFormatterFactory);
                 }
-                jJsonValue.setText(mCurrentData.getValue());
+
+                jJsonValue.setValue(mCurrentData.getValue());
                 jButtonEditVal.setEnabled(true);
             } else {
                 mCurrentData = null;
-                jJsonValue.setText("");
+                jJsonValue.setFormatterFactory(mDefaultFormatterFactory);
+                jJsonValue.setValue("");
                 jButtonEditVal.setEnabled(false);
             }
-            jButtonEditVal.setText("Edit");
-            jJsonValue.setEditable(false);
         });
     }
 
@@ -142,6 +147,8 @@ public class JsonEditorDialog extends javax.swing.JDialog {
                 jButtonEditValActionPerformed(evt);
             }
         });
+
+        jJsonValue.setEditable(false);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
