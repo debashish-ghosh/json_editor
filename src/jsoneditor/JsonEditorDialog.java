@@ -12,9 +12,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JFileChooser;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
+import javax.swing.JFormattedTextField;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.text.DefaultFormatterFactory;
+import javax.swing.text.NumberFormatter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeSelectionModel;
@@ -35,22 +36,30 @@ public class JsonEditorDialog extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
 
-        jJsonTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-        jJsonTree.addTreeSelectionListener(new TreeSelectionListener() {
-            @Override
-            public void valueChanged(TreeSelectionEvent e) {
-                DefaultMutableTreeNode node = (DefaultMutableTreeNode) jJsonTree.getLastSelectedPathComponent();
+        numberFormatter = new NumberFormatter();
+        numberFormatter.setAllowsInvalid(false);
+        mDefaultFormatterFactory = jJsonValue.getFormatterFactory();
 
-                if (node != null && node.isLeaf()) {
-                    mCurrentData = (TreeNodeData) node.getUserObject();
-                    jJsonValue.setText(mCurrentData.getValue());
-                    jJsonValue.setEnabled(true);
+        jJsonTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        jJsonTree.addTreeSelectionListener((TreeSelectionEvent) -> {
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) jJsonTree.getLastSelectedPathComponent();
+
+            if (node != null && node.isLeaf()) {
+                mCurrentData = (TreeNodeData) node.getUserObject();
+                if (mCurrentData.isInt()) {
+                    jJsonValue.setFormatterFactory(new DefaultFormatterFactory(numberFormatter));
                 } else {
-                    mCurrentData = null;
-                    jJsonValue.setText("");
-                    jJsonValue.setEnabled(false);
+                    jJsonValue.setFormatterFactory(mDefaultFormatterFactory);
                 }
+                jJsonValue.setText(mCurrentData.getValue());
+                jButtonEditVal.setEnabled(true);
+            } else {
+                mCurrentData = null;
+                jJsonValue.setText("");
+                jButtonEditVal.setEnabled(false);
             }
+            jButtonEditVal.setText("Edit");
+            jJsonValue.setEditable(false);
         });
     }
 
@@ -74,7 +83,8 @@ public class JsonEditorDialog extends javax.swing.JDialog {
         jButtonCloseDialog = new javax.swing.JButton();
         jLabelJsonData = new javax.swing.JLabel();
         jLabelJsonValue = new javax.swing.JLabel();
-        jJsonValue = new javax.swing.JTextField();
+        jButtonEditVal = new javax.swing.JButton();
+        jJsonValue = new javax.swing.JFormattedTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle(TITLE);
@@ -125,8 +135,13 @@ public class JsonEditorDialog extends javax.swing.JDialog {
 
         jLabelJsonValue.setText("Value");
 
-        jJsonValue.setCursor(new java.awt.Cursor(java.awt.Cursor.TEXT_CURSOR));
-        jJsonValue.setEnabled(false);
+        jButtonEditVal.setText("Edit");
+        jButtonEditVal.setEnabled(false);
+        jButtonEditVal.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonEditValActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -135,22 +150,28 @@ public class JsonEditorDialog extends javax.swing.JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabelJsonData, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jSchemaFilePath)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButtonOpenSchema, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabelLoadSchema, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabelJsonData, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 385, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jButtonNewFile, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jButtonOpenJsonData, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jButtonSave, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jButtonCloseDialog, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabelJsonValue)
-                            .addComponent(jJsonValue)))
-                    .addComponent(jLabelLoadSchema, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(jJsonValue)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButtonEditVal, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabelJsonValue)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jButtonNewFile)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButtonOpenJsonData, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButtonSave, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 128, Short.MAX_VALUE)
+                        .addComponent(jButtonCloseDialog, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -162,23 +183,22 @@ public class JsonEditorDialog extends javax.swing.JDialog {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jSchemaFilePath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jButtonOpenSchema))
-                .addGap(14, 14, 14)
+                .addGap(15, 15, 15)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButtonNewFile)
+                    .addComponent(jButtonOpenJsonData)
+                    .addComponent(jButtonSave)
+                    .addComponent(jButtonCloseDialog))
+                .addGap(9, 9, 9)
                 .addComponent(jLabelJsonData)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jButtonNewFile)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButtonOpenJsonData)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButtonSave)
-                        .addGap(18, 18, 18)
-                        .addComponent(jLabelJsonValue)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jJsonValue, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jButtonCloseDialog))
-                    .addComponent(jScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE))
+                .addComponent(jScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabelJsonValue)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButtonEditVal)
+                    .addComponent(jJsonValue, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
@@ -253,6 +273,13 @@ public class JsonEditorDialog extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_jButtonOpenJsonDataActionPerformed
 
+    private void jButtonEditValActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonEditValActionPerformed
+        final String[] mode = {"Edit", "Done"};
+        int index = (jButtonEditVal.getText().equals(mode[1])) ? 1 : 0;
+        jButtonEditVal.setText(mode[index ^ 1]);
+        jJsonValue.setEditable(index == 0);
+    }//GEN-LAST:event_jButtonEditValActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -272,12 +299,13 @@ public class JsonEditorDialog extends javax.swing.JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButtonCloseDialog;
+    private javax.swing.JButton jButtonEditVal;
     private javax.swing.JButton jButtonNewFile;
     private javax.swing.JButton jButtonOpenJsonData;
     private javax.swing.JButton jButtonOpenSchema;
     private javax.swing.JButton jButtonSave;
     private javax.swing.JTree jJsonTree;
-    private javax.swing.JTextField jJsonValue;
+    private javax.swing.JFormattedTextField jJsonValue;
     private javax.swing.JLabel jLabelJsonData;
     private javax.swing.JLabel jLabelJsonValue;
     private javax.swing.JLabel jLabelLoadSchema;
@@ -290,6 +318,8 @@ public class JsonEditorDialog extends javax.swing.JDialog {
     private TreeNodeData mCurrentData = null;
     private JFileChooser jJsonSchemaChooser = null;
     private JFileChooser jJsonFileChooser = null;
+    private NumberFormatter numberFormatter = null;
+    private JFormattedTextField.AbstractFormatterFactory mDefaultFormatterFactory;
 
     private static class JsonFileFilter extends FileFilter {
 

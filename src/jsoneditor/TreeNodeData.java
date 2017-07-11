@@ -31,6 +31,10 @@ public class TreeNodeData {
     public String toString() {
         return mNodeTag;
     }
+    
+    public boolean isInt() {
+        return mSchemaNode != null && mSchemaNode.getString("type").equalsIgnoreCase("integer");
+    }
 
     public String getValue() {
         final String nodeType = mSchemaNode.getString("type");
