@@ -35,24 +35,25 @@ public class JsonEditorDialog extends javax.swing.JDialog {
     public JsonEditorDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        mDefaultFormatterFactory = jJsonValue.getFormatterFactory();
 
-        numberFormatter = new NumberFormatter();
+        NumberFormatter numberFormatter = new NumberFormatter();
         numberFormatter.setAllowsInvalid(false);
+        mNumberFormatterFactory = new DefaultFormatterFactory(numberFormatter);
         mDefaultFormatterFactory = jJsonValue.getFormatterFactory();
 
         jJsonTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         jJsonTree.addTreeSelectionListener((TreeSelectionEvent) -> {
             jButtonEditVal.setText("Edit");
             jJsonValue.setEditable(false);
+            jJsonValue.setValue(null);
 
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) jJsonTree.getLastSelectedPathComponent();
 
             if (node != null && node.isLeaf()) {
-                jJsonValue.setValue(null);
-
                 mCurrentData = (TreeNodeData) node.getUserObject();
                 if (mCurrentData.isInt()) {
-                    jJsonValue.setFormatterFactory(new DefaultFormatterFactory(numberFormatter));
+                    jJsonValue.setFormatterFactory(mNumberFormatterFactory);
                 } else {
                     jJsonValue.setFormatterFactory(mDefaultFormatterFactory);
                 }
@@ -62,7 +63,6 @@ public class JsonEditorDialog extends javax.swing.JDialog {
             } else {
                 mCurrentData = null;
                 jJsonValue.setFormatterFactory(mDefaultFormatterFactory);
-                jJsonValue.setValue("");
                 jButtonEditVal.setEnabled(false);
             }
         });
@@ -325,8 +325,7 @@ public class JsonEditorDialog extends javax.swing.JDialog {
     private TreeNodeData mCurrentData = null;
     private JFileChooser jJsonSchemaChooser = null;
     private JFileChooser jJsonFileChooser = null;
-    private NumberFormatter numberFormatter = null;
-    private JFormattedTextField.AbstractFormatterFactory mDefaultFormatterFactory;
+    private JFormattedTextField.AbstractFormatterFactory mDefaultFormatterFactory, mNumberFormatterFactory;
 
     private static class JsonFileFilter extends FileFilter {
 

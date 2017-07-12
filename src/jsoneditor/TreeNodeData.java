@@ -36,12 +36,10 @@ public class TreeNodeData {
         return mSchemaNode != null && mSchemaNode.getString("type").equalsIgnoreCase("integer");
     }
 
-    public String getValue() {
+    public Object getValue() {
         final String nodeType = mSchemaNode.getString("type");
-        if (nodeType.equalsIgnoreCase("string")) {
-            return ((String) mJsonNode);
-        } else if (nodeType.equalsIgnoreCase("integer")) {
-            return ("" + (int) mJsonNode);
+        if (nodeType.equalsIgnoreCase("string") || nodeType.equalsIgnoreCase("integer")) {
+            return mJsonNode;
         }
         return null;
     }
