@@ -14,7 +14,7 @@ import org.json.JSONObject;
 public class TreeNodeData {
 
     private final JSONObject mSchemaNode;
-    private final Object mJsonNode;
+    private Object mJsonNode;
     private String mNodeTag;
 
     public TreeNodeData(JSONObject schemaNode, Object jsonNode, String tag) {
@@ -22,7 +22,11 @@ public class TreeNodeData {
         mJsonNode = jsonNode;
         mNodeTag = tag;
     }
-    
+
+    public String getTag() {
+        return mNodeTag;
+    }
+
     public void setTag(String tag) {
         mNodeTag = tag;
     }
@@ -31,16 +35,45 @@ public class TreeNodeData {
     public String toString() {
         return mNodeTag;
     }
-    
+
+    /**
+     * Query for leaf nodes whether they are integer or string
+     *
+     * @return
+     */
     public boolean isInt() {
-        return mSchemaNode != null && mSchemaNode.getString("type").equalsIgnoreCase("integer");
+        String type = mSchemaNode.getString("type");
+        if (type != null) {
+            return mSchemaNode != null && type.equalsIgnoreCase("integer");
+        }
+        return false;
+    }
+
+    /**
+     * Query for branch nodes whether they are JSONArray or JSONObject
+     *
+     * @return
+     */
+    public boolean isArray() {
+        String type = mSchemaNode.getString("type");
+        if (type != null) {
+            return mSchemaNode != null && type.equalsIgnoreCase("array");
+        }
+        return false;
     }
 
     public Object getValue() {
         final String nodeType = mSchemaNode.getString("type");
-        if (nodeType.equalsIgnoreCase("string") || nodeType.equalsIgnoreCase("integer")) {
-            return mJsonNode;
+        return mJsonNode;
+    }
+
+    public boolean setValue(Object value) {
+        String type = mSchemaNode.getString("type");
+        if (type.equalsIgnoreCase("string") && value instanceof String
+                || type.equalsIgnoreCase("integer") && value instanceof Integer) {
+            mJsonNode = value;
+            return true;
         }
-        return null;
+        return false;
     }
 }

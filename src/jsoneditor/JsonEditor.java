@@ -8,6 +8,9 @@ package jsoneditor;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.Set;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.json.JSONArray;
@@ -53,6 +56,16 @@ public class JsonEditor {
     public void setJsonSchema(File jsonSchema) throws FileNotFoundException {
         mJsonSchema = jsonSchema;
         loadSchema();
+    }
+
+    public void writeToFile() throws IOException {
+        writeToFile(mJsonFile);
+    }
+
+    void writeToFile(File file) throws IOException {
+        Writer writer = new FileWriter(file);
+        mJsonObj.write(writer, 4, 0);
+        writer.close();
     }
 
     /**
