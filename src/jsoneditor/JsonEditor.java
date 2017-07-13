@@ -12,6 +12,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -23,6 +25,11 @@ import org.json.JSONTokener;
  * @author debashish.ghosh
  */
 public class JsonEditor {
+
+    private File mJsonFile = null;
+    private File mJsonSchema = null;
+    private JSONObject mJsonSchemaObj = null;
+    private JSONObject mJsonObj = null;
 
     /**
      * Initialize a new JsonEditor object with a JSON Schema
@@ -58,14 +65,19 @@ public class JsonEditor {
         loadSchema();
     }
 
-    public void writeToFile() throws IOException {
+    public void writeToFile() {
         writeToFile(mJsonFile);
     }
 
-    void writeToFile(File file) throws IOException {
-        Writer writer = new FileWriter(file);
-        mJsonObj.write(writer, 4, 0);
-        writer.close();
+    public void writeToFile(File file) {
+        try (Writer writer = new FileWriter(file)) {
+            // 4 spaces for indentation, and 0 indentation for root node
+            mJsonObj.write(writer, 4, 0);
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(JsonEditor.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(JsonEditor.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
@@ -108,8 +120,4 @@ public class JsonEditor {
         }
     }
 
-    private File mJsonFile = null;
-    private File mJsonSchema = null;
-    private JSONObject mJsonSchemaObj = null;
-    private JSONObject mJsonObj = null;
 }

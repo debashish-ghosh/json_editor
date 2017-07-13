@@ -15,6 +15,7 @@ import java.util.prefs.Preferences;
 import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.text.DefaultFormatter;
 import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.NumberFormatter;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -42,12 +43,15 @@ public class JsonEditorDialog extends javax.swing.JDialog {
         NumberFormatter numberFormatter = new NumberFormatter();
         numberFormatter.setAllowsInvalid(false);
         numberFormatter.setFormat(new DecimalFormat("#"));
+        numberFormatter.setOverwriteMode(false);
         mNumberFormatterFactory = new DefaultFormatterFactory(numberFormatter);
+
         mDefaultFormatterFactory = jJsonValue.getFormatterFactory();
+        ((DefaultFormatter) jJsonValue.getFormatter()).setOverwriteMode(false);
 
         jJsonTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         jJsonTree.addTreeSelectionListener((TreeSelectionEvent) -> {
-            jButtonEditVal.setText("Edit");
+            jButtonEditValue.setText("Edit");
             jJsonValue.setEditable(false);
             jJsonValue.setValue(null);
 
@@ -62,11 +66,11 @@ public class JsonEditorDialog extends javax.swing.JDialog {
                 }
 
                 jJsonValue.setValue(mCurrentData.getValue());
-                jButtonEditVal.setEnabled(true);
+                jButtonEditValue.setEnabled(true);
             } else {
                 mCurrentData = null;
                 jJsonValue.setFormatterFactory(mDefaultFormatterFactory);
-                jButtonEditVal.setEnabled(false);
+                jButtonEditValue.setEnabled(false);
             }
         });
     }
@@ -93,7 +97,7 @@ public class JsonEditorDialog extends javax.swing.JDialog {
         jJsonTree = new javax.swing.JTree();
         jLabelJsonValue = new javax.swing.JLabel();
         jJsonValue = new javax.swing.JFormattedTextField();
-        jButtonEditVal = new javax.swing.JButton();
+        jButtonEditValue = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle(TITLE);
@@ -109,7 +113,7 @@ public class JsonEditorDialog extends javax.swing.JDialog {
         jButtonOpenSchema.setText("...");
         jButtonOpenSchema.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButtonOpenSchemaActionPerformed(evt);
+                OpenSchema_ActionPerformed(evt);
             }
         });
 
@@ -120,7 +124,7 @@ public class JsonEditorDialog extends javax.swing.JDialog {
         jButtonOpenJsonData.setEnabled(false);
         jButtonOpenJsonData.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButtonOpenJsonDataActionPerformed(evt);
+                OpenJsonData_ActionPerformed(evt);
             }
         });
 
@@ -129,7 +133,7 @@ public class JsonEditorDialog extends javax.swing.JDialog {
         jButtonSave.setEnabled(false);
         jButtonSave.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButtonSaveActionPerformed(evt);
+                Save_ActionPerformed(evt);
             }
         });
 
@@ -137,14 +141,14 @@ public class JsonEditorDialog extends javax.swing.JDialog {
         jButtonSaveAs.setEnabled(false);
         jButtonSaveAs.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButtonSaveAsActionPerformed(evt);
+                SaveAs_ActionPerformed(evt);
             }
         });
 
         jButtonCloseDialog.setText("Close");
         jButtonCloseDialog.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButtonCloseDialogActionPerformed(evt);
+                CloseDialog_ActionPerformed(evt);
             }
         });
 
@@ -158,12 +162,13 @@ public class JsonEditorDialog extends javax.swing.JDialog {
         jLabelJsonValue.setText("Value");
 
         jJsonValue.setEditable(false);
+        jJsonValue.setFormatterFactory(new DefaultFormatterFactory(new DefaultFormatter()));
 
-        jButtonEditVal.setText("Edit");
-        jButtonEditVal.setEnabled(false);
-        jButtonEditVal.addActionListener(new java.awt.event.ActionListener() {
+        jButtonEditValue.setText("Edit");
+        jButtonEditValue.setEnabled(false);
+        jButtonEditValue.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButtonEditValActionPerformed(evt);
+                EditValue_ActionPerformed(evt);
             }
         });
 
@@ -183,7 +188,7 @@ public class JsonEditorDialog extends javax.swing.JDialog {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jJsonValue)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButtonEditVal, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(jButtonEditValue, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jScrollPane)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabelJsonValue)
@@ -224,7 +229,7 @@ public class JsonEditorDialog extends javax.swing.JDialog {
                 .addComponent(jLabelJsonValue)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButtonEditVal)
+                    .addComponent(jButtonEditValue)
                     .addComponent(jJsonValue, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
@@ -232,7 +237,7 @@ public class JsonEditorDialog extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButtonOpenSchemaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonOpenSchemaActionPerformed
+    private void OpenSchema_ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OpenSchema_ActionPerformed
         Preferences prefs = Preferences.userNodeForPackage(getClass());
         if (jJsonSchemaChooser == null) {
             jJsonSchemaChooser = new JFileChooser();
@@ -264,14 +269,14 @@ public class JsonEditorDialog extends javax.swing.JDialog {
                 jButtonOpenJsonData.setEnabled(true);
                 break;
         }
-    }//GEN-LAST:event_jButtonOpenSchemaActionPerformed
+    }//GEN-LAST:event_OpenSchema_ActionPerformed
 
-    private void jButtonCloseDialogActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonCloseDialogActionPerformed
+    private void CloseDialog_ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CloseDialog_ActionPerformed
         dispose();
         System.exit(0);
-    }//GEN-LAST:event_jButtonCloseDialogActionPerformed
+    }//GEN-LAST:event_CloseDialog_ActionPerformed
 
-    private void jButtonOpenJsonDataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonOpenJsonDataActionPerformed
+    private void OpenJsonData_ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OpenJsonData_ActionPerformed
         Preferences prefs = Preferences.userNodeForPackage(getClass());
         if (jJsonFileChooser == null) {
             jJsonFileChooser = new JFileChooser();
@@ -291,7 +296,11 @@ public class JsonEditorDialog extends javax.swing.JDialog {
                         jButtonSave.setEnabled(true);
                         jButtonSaveAs.setEnabled(true);
                         DefaultTreeModel model = (DefaultTreeModel) jJsonTree.getModel();
-                        mJsonEditor.inflateJson((DefaultMutableTreeNode) model.getRoot());
+                        DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) model.getRoot();
+                        if (rootNode != null) {
+                            rootNode.removeAllChildren();
+                        }
+                        mJsonEditor.inflateJson(rootNode);
                         model.reload();
                     }
                 } catch (IOException ex) {
@@ -299,12 +308,12 @@ public class JsonEditorDialog extends javax.swing.JDialog {
                 }
                 break;
         }
-    }//GEN-LAST:event_jButtonOpenJsonDataActionPerformed
+    }//GEN-LAST:event_OpenJsonData_ActionPerformed
 
-    private void jButtonEditValActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonEditValActionPerformed
+    private void EditValue_ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_EditValue_ActionPerformed
         final String[] mode = {"Edit", "Done"};
-        int index = (jButtonEditVal.getText().equals(mode[1])) ? 1 : 0;
-        jButtonEditVal.setText(mode[index ^ 1]);
+        int index = (jButtonEditValue.getText().equals(mode[1])) ? 1 : 0;
+        jButtonEditValue.setText(mode[index ^ 1]);
         if (index == 0) {
             jJsonValue.setEditable(true);
             int textLen = jJsonValue.getText().length();
@@ -322,17 +331,13 @@ public class JsonEditorDialog extends javax.swing.JDialog {
                 mCurrentData.setValue(jJsonValue.getValue());
             }
         }
-    }//GEN-LAST:event_jButtonEditValActionPerformed
+    }//GEN-LAST:event_EditValue_ActionPerformed
 
-    private void jButtonSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSaveActionPerformed
-        try {
-            mJsonEditor.writeToFile();
-        } catch (IOException ex) {
-            Logger.getLogger(JsonEditorDialog.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }//GEN-LAST:event_jButtonSaveActionPerformed
+    private void Save_ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Save_ActionPerformed
+        mJsonEditor.writeToFile();
+    }//GEN-LAST:event_Save_ActionPerformed
 
-    private void jButtonSaveAsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSaveAsActionPerformed
+    private void SaveAs_ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SaveAs_ActionPerformed
         Preferences prefs = Preferences.userNodeForPackage(getClass());
         if (jJsonSaveAsFileChooser == null) {
             jJsonSaveAsFileChooser = new JFileChooser();
@@ -346,14 +351,10 @@ public class JsonEditorDialog extends javax.swing.JDialog {
             case JFileChooser.APPROVE_OPTION:
                 File file = jJsonSaveAsFileChooser.getSelectedFile();
                 prefs.put("last_dir_save_as", file.getParent());
-                try {
-                    mJsonEditor.writeToFile(file);
-                } catch (IOException ex) {
-                    Logger.getLogger(JsonEditorDialog.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                mJsonEditor.writeToFile(file);
                 break;
         }
-    }//GEN-LAST:event_jButtonSaveAsActionPerformed
+    }//GEN-LAST:event_SaveAs_ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -374,7 +375,7 @@ public class JsonEditorDialog extends javax.swing.JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButtonCloseDialog;
-    private javax.swing.JButton jButtonEditVal;
+    private javax.swing.JButton jButtonEditValue;
     private javax.swing.JButton jButtonNewFile;
     private javax.swing.JButton jButtonOpenJsonData;
     private javax.swing.JButton jButtonOpenSchema;
