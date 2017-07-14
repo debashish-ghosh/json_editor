@@ -314,18 +314,20 @@ public class JsonEditorDialog extends javax.swing.JDialog {
         final String[] mode = {"Edit", "Done"};
         int index = (jButtonEditValue.getText().equals(mode[1])) ? 1 : 0;
         jButtonEditValue.setText(mode[index ^ 1]);
-        if (index == 0) {
+        if (index == 0) {       // starting edits
             jJsonValue.setEditable(true);
             int textLen = jJsonValue.getText().length();
             if (textLen != 0) {
                 jJsonValue.setCaretPosition(textLen - 1);
             }
-        } else {
+        } else {        // finishing edits
             jJsonValue.setEditable(false);
             TreePath selectionPath = jJsonTree.getSelectionPath();
             if (selectionPath != null) {
                 DefaultMutableTreeNode parentNode = (DefaultMutableTreeNode) selectionPath.getParentPath().getLastPathComponent();
                 TreeNodeData parentNodeData = (TreeNodeData) parentNode.getUserObject();
+
+                // updating the parent node
                 JSONObject obj = (JSONObject) parentNodeData.getValue();
                 obj.put(mCurrentData.getTag(), jJsonValue.getValue());
                 mCurrentData.setValue(jJsonValue.getValue());

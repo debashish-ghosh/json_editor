@@ -70,7 +70,7 @@ public class TreeNodeData {
     public boolean setValue(Object value) {
         String type = mSchemaNode.getString("type");
         if (type.equalsIgnoreCase("string") && value instanceof String
-                || type.equalsIgnoreCase("integer") && value instanceof Integer) {
+                || type.equalsIgnoreCase("integer") && (value instanceof Long || value instanceof Integer)) {
             mJsonNode = value;
             return true;
         }
