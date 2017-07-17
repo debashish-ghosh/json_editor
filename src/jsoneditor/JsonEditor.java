@@ -29,6 +29,7 @@ public class JsonEditor {
     private File mJsonFile = null;
     private File mJsonSchema = null;
     private JSONObject mJsonSchemaObj = null;
+    private JSONObject mJsonSchemaDefs = null;
     private JSONObject mJsonObj = null;
 
     /**
@@ -92,25 +93,45 @@ public class JsonEditor {
     private void loadSchema() throws FileNotFoundException, JSONException {
         JSONTokener x = new JSONTokener(new FileInputStream(mJsonSchema));
         mJsonSchemaObj = new JSONObject(x);
+
+        if (mJsonSchemaObj.has("definitions")) {
+            mJsonSchemaDefs = mJsonSchemaObj.getJSONObject("definitions");
+        } else {
+            mJsonSchemaDefs = null;
+        }
     }
 
     private void inflate(JSONObject schema, Object json, String tag, DefaultMutableTreeNode node) {
+
+        if (schema.has("$ref")) {
+            String[] tokens = schema.getString("$ref").split("/");
+            if (tokens.length > 2 && tokens[0].equals("#") && tokens[1].equalsIgnoreCase("definitions")) {
+                schema = mJsonSchemaDefs;
+                for (int i = 2; i < tokens.length; i++) {
+                    if (schema.has(tokens[i])) {
+                        tag = tokens[i];
+                        schema = schema.getJSONObject(tokens[i]);
+                    }
+                }
+            }
+        }
+
         DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(new TreeNodeData(schema, json, tag));
         node.add(childNode);
 
-        String nodeType = (String) schema.get("type");
+        String nodeType = schema.getString("type");
         if (nodeType.equalsIgnoreCase("object")) {
-            JSONObject prop = (JSONObject) schema.get("properties");
+            JSONObject prop = schema.getJSONObject("properties");
             Set<String> keySet = prop.keySet();
             for (String key : keySet) {
                 if (!((JSONObject) json).isNull(key)) {
-                    JSONObject schemaVal = (JSONObject) prop.get(key);
+                    JSONObject schemaVal = prop.getJSONObject(key);
                     Object jsonVal = ((JSONObject) json).get(key);
                     inflate(schemaVal, jsonVal, key, childNode);
                 }
             }
         } else if (nodeType.equalsIgnoreCase("array")) {
-            JSONObject items = (JSONObject) schema.get("items");
+            JSONObject items = schema.getJSONObject("items");
             for (int i = 0; i < ((JSONArray) json).length(); i++) {
                 Object jsonVal = ((JSONArray) json).get(i);
                 inflate(items, jsonVal, "" + (i + 1), childNode);

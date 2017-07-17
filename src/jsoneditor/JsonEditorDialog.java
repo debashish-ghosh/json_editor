@@ -398,7 +398,7 @@ public class JsonEditorDialog extends javax.swing.JDialog {
     private JFileChooser jJsonSchemaChooser = null;
     private JFileChooser jJsonFileChooser = null;
     private JFileChooser jJsonSaveAsFileChooser = null;
-    private JFormattedTextField.AbstractFormatterFactory mDefaultFormatterFactory, mNumberFormatterFactory;
+    private final JFormattedTextField.AbstractFormatterFactory mDefaultFormatterFactory, mNumberFormatterFactory;
 
     private static class JsonFileFilter extends FileFilter {
 
