@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -106,10 +107,12 @@ public class JsonEditor {
         if (schema.has("$ref")) {
             String[] tokens = schema.getString("$ref").split("/");
             if (tokens.length > 2 && tokens[0].equals("#") && tokens[1].equalsIgnoreCase("definitions")) {
+                if (mJsonSchemaDefs == null) {
+                    return;
+                }
                 schema = mJsonSchemaDefs;
                 for (int i = 2; i < tokens.length; i++) {
                     if (schema.has(tokens[i])) {
-                        tag = tokens[i];
                         schema = schema.getJSONObject(tokens[i]);
                     }
                 }
@@ -138,6 +141,61 @@ public class JsonEditor {
             }
         } else if (nodeType.equalsIgnoreCase("string")) {
         } else if (nodeType.equalsIgnoreCase("integer")) {
+        }
+    }
+
+    public void createChildTree(DefaultTreeModel model, DefaultMutableTreeNode parent) {
+        TreeNodeData treeNodeData = (TreeNodeData) parent.getUserObject();
+        JSONObject parentSchema = treeNodeData.getSchema();
+        String parentNodeType = parentSchema.getString("type");
+
+        if (parentNodeType.equalsIgnoreCase("object")) {        // TODO
+            JSONObject prop = parentSchema.getJSONObject("properties");
+            JSONObject jsonData = (JSONObject) treeNodeData.getValue();
+            boolean propsAlreadyExist = false;
+            boolean refsAlreadyExist = false;
+            Set<String> keySet = prop.keySet();
+            for (String key : keySet) {
+                if (jsonData.has(key)) {
+                    propsAlreadyExist = true;
+                    JSONObject keyObj = prop.getJSONObject(key);
+                    if (keyObj.has("$refs")) {
+                        refsAlreadyExist = true;
+                        break;
+                    }
+                }
+            }
+
+            if (propsAlreadyExist) {
+
+            } else {
+                for (String key : keySet) {
+                    JSONObject keyObj = prop.getJSONObject(key);
+                    if (!keyObj.has("$refs") && keyObj.has("type")) {
+                        
+                    }
+                }
+            }
+        } else if (parentNodeType.equalsIgnoreCase("array")) {
+            JSONArray jsonData = (JSONArray) treeNodeData.getValue();
+            JSONObject items = parentSchema.getJSONObject("items");
+            String itemType = items.getString("type");
+
+            Object childJsonNode = null;
+            if (itemType.equalsIgnoreCase("array")) {
+                childJsonNode = new JSONArray();
+            } else if (itemType.equalsIgnoreCase("object")) {
+                childJsonNode = new JSONObject();
+            }
+            jsonData.put(childJsonNode);
+
+            int tag = parent.getChildCount();
+            DefaultMutableTreeNode childTreeNode = new DefaultMutableTreeNode(new TreeNodeData(items, childJsonNode, "" + tag));
+            model.insertNodeInto(childTreeNode, parent, tag);
+
+            createChildTree(model, childTreeNode);
+        } else if (parentNodeType.equalsIgnoreCase("string")) {
+        } else if (parentNodeType.equalsIgnoreCase("integer")) {
         }
     }
 
