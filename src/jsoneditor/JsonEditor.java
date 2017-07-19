@@ -147,37 +147,52 @@ public class JsonEditor {
     public void createChildTree(DefaultTreeModel model, DefaultMutableTreeNode parent) {
         TreeNodeData treeNodeData = (TreeNodeData) parent.getUserObject();
         JSONObject parentSchema = treeNodeData.getSchema();
-        String parentNodeType = parentSchema.getString("type");
 
+        String parentNodeType = parentSchema.getString("type");
         if (parentNodeType.equalsIgnoreCase("object")) {        // TODO
+            JSONObject jsonData = (JSONObject) treeNodeData.getJsonData();
+
             JSONObject prop = parentSchema.getJSONObject("properties");
-            JSONObject jsonData = (JSONObject) treeNodeData.getValue();
-            boolean propsAlreadyExist = false;
-            boolean refsAlreadyExist = false;
             Set<String> keySet = prop.keySet();
             for (String key : keySet) {
-                if (jsonData.has(key)) {
-                    propsAlreadyExist = true;
-                    JSONObject keyObj = prop.getJSONObject(key);
-                    if (keyObj.has("$refs")) {
-                        refsAlreadyExist = true;
-                        break;
-                    }
-                }
-            }
+                if (!jsonData.has(key)) {
+                    JSONObject value = prop.getJSONObject(key);
+                    Object nodeData = null;
 
-            if (propsAlreadyExist) {
-
-            } else {
-                for (String key : keySet) {
-                    JSONObject keyObj = prop.getJSONObject(key);
-                    if (!keyObj.has("$refs") && keyObj.has("type")) {
-                        
+                    if (value.has("$ref")) {
+                        String[] tokens = value.getString("$ref").split("/");
+                        if (tokens.length > 2 && tokens[0].equals("#") && tokens[1].equalsIgnoreCase("definitions")) {
+                            if (mJsonSchemaDefs == null) {
+                                break;
+                            }
+                            value = mJsonSchemaDefs;
+                            for (int i = 2; i < tokens.length; i++) {
+                                if (value.has(tokens[i])) {
+                                    value = value.getJSONObject(tokens[i]);
+                                }
+                            }
+                        }
                     }
+
+                    String valueType = value.getString("type");
+                    if (valueType.equalsIgnoreCase("integer")) {
+                        nodeData = 0;
+                    } else if (valueType.equalsIgnoreCase("string")) {
+                        nodeData = "";
+                    } else if (valueType.equalsIgnoreCase("object")) {
+                        nodeData = new JSONObject();
+                    } else if (valueType.equalsIgnoreCase("array")) {
+                        nodeData = new JSONArray();
+                    }
+
+                    jsonData.put(key, nodeData);
+                    DefaultMutableTreeNode childTreeNode = new DefaultMutableTreeNode(new TreeNodeData(value, nodeData, key));
+                    model.insertNodeInto(childTreeNode, parent, parent.getChildCount());
                 }
             }
         } else if (parentNodeType.equalsIgnoreCase("array")) {
-            JSONArray jsonData = (JSONArray) treeNodeData.getValue();
+            JSONArray jsonData = (JSONArray) treeNodeData.getJsonData();
+
             JSONObject items = parentSchema.getJSONObject("items");
             String itemType = items.getString("type");
 
@@ -190,12 +205,10 @@ public class JsonEditor {
             jsonData.put(childJsonNode);
 
             int tag = parent.getChildCount();
-            DefaultMutableTreeNode childTreeNode = new DefaultMutableTreeNode(new TreeNodeData(items, childJsonNode, "" + tag));
+            DefaultMutableTreeNode childTreeNode = new DefaultMutableTreeNode(new TreeNodeData(items, childJsonNode, "" + (tag + 1)));
             model.insertNodeInto(childTreeNode, parent, tag);
 
             createChildTree(model, childTreeNode);
-        } else if (parentNodeType.equalsIgnoreCase("string")) {
-        } else if (parentNodeType.equalsIgnoreCase("integer")) {
         }
     }
 

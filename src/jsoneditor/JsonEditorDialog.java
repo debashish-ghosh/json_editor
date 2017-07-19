@@ -59,18 +59,27 @@ public class JsonEditorDialog extends javax.swing.JDialog {
 
             if (node != null && node.isLeaf()) {
                 mCurrentData = (TreeNodeData) node.getUserObject();
-                if (mCurrentData.isInt()) {
-                    jJsonValue.setFormatterFactory(mNumberFormatterFactory);
-                } else {
-                    jJsonValue.setFormatterFactory(mDefaultFormatterFactory);
-                }
+                if (mCurrentData.isPrimitiveData()) {
+                    if (mCurrentData.isInt()) {
+                        jJsonValue.setFormatterFactory(mNumberFormatterFactory);
+                    } else {
+                        jJsonValue.setFormatterFactory(mDefaultFormatterFactory);
+                    }
 
-                jJsonValue.setValue(mCurrentData.getValue());
-                jButtonEditValue.setEnabled(true);
+                    jJsonValue.setValue(mCurrentData.getJsonData());
+                    jButtonEditValue.setEnabled(true);
+                    jButtonAddNode.setEnabled(false);
+                } else {
+                    mCurrentData = null;
+                    jJsonValue.setFormatterFactory(mDefaultFormatterFactory);
+                    jButtonEditValue.setEnabled(false);
+                    jButtonAddNode.setEnabled(true);
+                }
             } else {
                 mCurrentData = null;
                 jJsonValue.setFormatterFactory(mDefaultFormatterFactory);
                 jButtonEditValue.setEnabled(false);
+                jButtonAddNode.setEnabled(true);
             }
         });
     }
@@ -91,6 +100,8 @@ public class JsonEditorDialog extends javax.swing.JDialog {
         jButtonOpenJsonData = new javax.swing.JButton();
         jButtonSave = new javax.swing.JButton();
         jButtonSaveAs = new javax.swing.JButton();
+        jButtonAddNode = new javax.swing.JButton();
+        jButtonRemoveNode = new javax.swing.JButton();
         jButtonCloseDialog = new javax.swing.JButton();
         jLabelJsonData = new javax.swing.JLabel();
         jScrollPane = new javax.swing.JScrollPane();
@@ -145,6 +156,17 @@ public class JsonEditorDialog extends javax.swing.JDialog {
             }
         });
 
+        jButtonAddNode.setText("Add Node");
+        jButtonAddNode.setEnabled(false);
+        jButtonAddNode.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                AddNode_ActionPerformed(evt);
+            }
+        });
+
+        jButtonRemoveNode.setText("Remove Node");
+        jButtonRemoveNode.setEnabled(false);
+
         jButtonCloseDialog.setText("Close");
         jButtonCloseDialog.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -179,21 +201,22 @@ public class JsonEditorDialog extends javax.swing.JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jSchemaFilePath)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButtonOpenSchema, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jLabelLoadSchema, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabelJsonData, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jJsonValue)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButtonEditValue, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jScrollPane)
                     .addGroup(layout.createSequentialGroup()
+                        .addComponent(jSchemaFilePath)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButtonOpenSchema, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jButtonCloseDialog, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabelJsonValue)
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(jButtonNewFile)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButtonOpenJsonData, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -201,8 +224,11 @@ public class JsonEditorDialog extends javax.swing.JDialog {
                         .addComponent(jButtonSave, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButtonSaveAs)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 39, Short.MAX_VALUE)
-                        .addComponent(jButtonCloseDialog, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 70, Short.MAX_VALUE)
+                        .addComponent(jButtonAddNode, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButtonRemoveNode))
+                    .addComponent(jLabelJsonData, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -213,18 +239,20 @@ public class JsonEditorDialog extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jSchemaFilePath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButtonOpenSchema))
+                    .addComponent(jButtonOpenSchema)
+                    .addComponent(jButtonCloseDialog))
                 .addGap(15, 15, 15)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButtonNewFile)
                     .addComponent(jButtonOpenJsonData)
                     .addComponent(jButtonSave)
-                    .addComponent(jButtonCloseDialog)
-                    .addComponent(jButtonSaveAs))
-                .addGap(9, 9, 9)
+                    .addComponent(jButtonSaveAs)
+                    .addComponent(jButtonRemoveNode)
+                    .addComponent(jButtonAddNode))
+                .addGap(18, 18, 18)
                 .addComponent(jLabelJsonData)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
+                .addComponent(jScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabelJsonValue)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -328,7 +356,7 @@ public class JsonEditorDialog extends javax.swing.JDialog {
                 TreeNodeData parentNodeData = (TreeNodeData) parentNode.getUserObject();
 
                 // updating the parent node
-                JSONObject obj = (JSONObject) parentNodeData.getValue();
+                JSONObject obj = (JSONObject) parentNodeData.getJsonData();
                 obj.put(mCurrentData.getTag(), jJsonValue.getValue());
                 mCurrentData.setValue(jJsonValue.getValue());
             }
@@ -358,6 +386,12 @@ public class JsonEditorDialog extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_SaveAs_ActionPerformed
 
+    private void AddNode_ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AddNode_ActionPerformed
+        DefaultTreeModel model = (DefaultTreeModel) jJsonTree.getModel();
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode) jJsonTree.getLastSelectedPathComponent();
+        mJsonEditor.createChildTree(model, node);
+    }//GEN-LAST:event_AddNode_ActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -376,11 +410,13 @@ public class JsonEditorDialog extends javax.swing.JDialog {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton jButtonAddNode;
     private javax.swing.JButton jButtonCloseDialog;
     private javax.swing.JButton jButtonEditValue;
     private javax.swing.JButton jButtonNewFile;
     private javax.swing.JButton jButtonOpenJsonData;
     private javax.swing.JButton jButtonOpenSchema;
+    private javax.swing.JButton jButtonRemoveNode;
     private javax.swing.JButton jButtonSave;
     private javax.swing.JButton jButtonSaveAs;
     private javax.swing.JTree jJsonTree;

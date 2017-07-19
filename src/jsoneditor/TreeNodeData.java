@@ -67,8 +67,18 @@ public class TreeNodeData {
         }
         return false;
     }
+    
+    public boolean isPrimitiveData() {
+        if (mSchemaNode.has("type")) {
+            String type = mSchemaNode.getString("type");
+            if (type != null) {
+                return mSchemaNode != null && (type.equalsIgnoreCase("string") || type.equalsIgnoreCase("integer"));
+            }
+        }
+        return false;
+    }
 
-    public Object getValue() {
+    public Object getJsonData() {
         final String nodeType = mSchemaNode.getString("type");
         return mJsonNode;
     }

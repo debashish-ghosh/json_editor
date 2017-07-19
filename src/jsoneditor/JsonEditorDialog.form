@@ -36,24 +36,25 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
-                      <Component id="jSchemaFilePath" max="32767" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jButtonOpenSchema" min="-2" pref="23" max="-2" attributes="0"/>
-                  </Group>
                   <Component id="jLabelLoadSchema" max="32767" attributes="0"/>
-                  <Component id="jLabelJsonData" alignment="0" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="jJsonValue" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jButtonEditValue" min="-2" pref="85" max="-2" attributes="0"/>
                   </Group>
                   <Component id="jScrollPane" alignment="0" max="32767" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="jSchemaFilePath" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="jButtonOpenSchema" min="-2" pref="23" max="-2" attributes="0"/>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <Component id="jButtonCloseDialog" min="-2" pref="85" max="-2" attributes="0"/>
+                  </Group>
                   <Group type="102" attributes="0">
                       <Component id="jLabelJsonValue" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
-                  <Group type="102" alignment="0" attributes="0">
+                  <Group type="102" alignment="1" attributes="0">
                       <Component id="jButtonNewFile" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jButtonOpenJsonData" min="-2" pref="85" max="-2" attributes="0"/>
@@ -61,9 +62,12 @@
                       <Component id="jButtonSave" min="-2" pref="85" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jButtonSaveAs" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="39" max="32767" attributes="0"/>
-                      <Component id="jButtonCloseDialog" min="-2" pref="85" max="-2" attributes="0"/>
+                      <EmptySpace pref="70" max="32767" attributes="0"/>
+                      <Component id="jButtonAddNode" min="-2" pref="99" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="jButtonRemoveNode" min="-2" max="-2" attributes="0"/>
                   </Group>
+                  <Component id="jLabelJsonData" alignment="0" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -78,19 +82,21 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jSchemaFilePath" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jButtonOpenSchema" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jButtonCloseDialog" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" pref="15" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jButtonNewFile" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jButtonOpenJsonData" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jButtonSave" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="jButtonCloseDialog" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jButtonSaveAs" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jButtonRemoveNode" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jButtonAddNode" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
               <Component id="jLabelJsonData" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jScrollPane" pref="225" max="32767" attributes="0"/>
+              <Component id="jScrollPane" pref="305" max="32767" attributes="0"/>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="jLabelJsonValue" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
@@ -158,6 +164,21 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="SaveAs_ActionPerformed"/>
       </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="jButtonAddNode">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Add Node"/>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="AddNode_ActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="jButtonRemoveNode">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Remove Node"/>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="jButtonCloseDialog">
       <Properties>
