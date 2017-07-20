@@ -45,10 +45,8 @@
                   <Component id="jScrollPane" alignment="0" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="jSchemaFilePath" max="32767" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="jButtonOpenSchema" min="-2" pref="23" max="-2" attributes="0"/>
-                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Component id="jButtonCloseDialog" min="-2" pref="85" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" attributes="0">
                       <Component id="jLabelJsonValue" min="-2" max="-2" attributes="0"/>
@@ -82,7 +80,6 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jSchemaFilePath" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jButtonOpenSchema" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="jButtonCloseDialog" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" pref="15" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -136,6 +133,9 @@
         <Property name="text" type="java.lang.String" value="New File..."/>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="NewFile_ActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="jButtonOpenJsonData">
       <Properties>
@@ -179,14 +179,6 @@
         <Property name="text" type="java.lang.String" value="Remove Node"/>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
-    </Component>
-    <Component class="javax.swing.JButton" name="jButtonCloseDialog">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Close"/>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="CloseDialog_ActionPerformed"/>
-      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabelJsonData">
       <Properties>

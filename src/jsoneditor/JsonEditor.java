@@ -51,9 +51,11 @@ public class JsonEditor {
      * @throws FileNotFoundException
      */
     public void setJsonFile(File jsonData) throws FileNotFoundException {
-        mJsonFile = jsonData;
-        JSONTokener x = new JSONTokener(new FileInputStream(mJsonFile));
-        mJsonObj = new JSONObject(x);
+        if (mJsonFile != jsonData) {
+            mJsonFile = jsonData;
+            JSONTokener x = new JSONTokener(new FileInputStream(mJsonFile));
+            mJsonObj = new JSONObject(x);
+        }
     }
 
     /**
@@ -75,6 +77,7 @@ public class JsonEditor {
         try (Writer writer = new FileWriter(file)) {
             // 4 spaces for indentation, and 0 indentation for root node
             mJsonObj.write(writer, 4, 0);
+            if (mJsonFile != file) mJsonFile = file;
         } catch (FileNotFoundException ex) {
             Logger.getLogger(JsonEditor.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
@@ -89,6 +92,14 @@ public class JsonEditor {
      */
     public void inflateJson(DefaultMutableTreeNode node) {
         inflate(mJsonSchemaObj, mJsonObj, "JSON Root", node);
+    }
+
+    public void makeNewTree(DefaultMutableTreeNode node) {
+        if (mJsonFile != null) {
+            mJsonFile = null;
+        }
+        mJsonObj = new JSONObject();
+        inflateJson(node);
     }
 
     private void loadSchema() throws FileNotFoundException, JSONException {
