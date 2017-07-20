@@ -55,11 +55,15 @@ public class JsonEditorDialog extends javax.swing.JDialog {
             jJsonValue.setEditable(false);
             jJsonValue.setValue(null);
 
-            DefaultMutableTreeNode node = (DefaultMutableTreeNode) jJsonTree.getLastSelectedPathComponent();
+            DefaultMutableTreeNode currentSelectedNode = (DefaultMutableTreeNode) jJsonTree.getLastSelectedPathComponent();
 
-            if (node != null && node.isLeaf()) {
-                mCurrentData = (TreeNodeData) node.getUserObject();
-                if (mCurrentData.isPrimitiveData()) {
+            if (currentSelectedNode != null) {
+                mCurrentData = (TreeNodeData) currentSelectedNode.getUserObject();
+
+                DefaultMutableTreeNode parentNode = (DefaultMutableTreeNode) currentSelectedNode.getParent();
+                jButtonRemoveNode.setEnabled(!parentNode.isRoot());
+
+                if (currentSelectedNode.isLeaf() && mCurrentData.isPrimitiveData()) {
                     if (mCurrentData.isInt()) {
                         jJsonValue.setFormatterFactory(mNumberFormatterFactory);
                     } else {
@@ -170,6 +174,11 @@ public class JsonEditorDialog extends javax.swing.JDialog {
 
         jButtonRemoveNode.setText("Remove Node");
         jButtonRemoveNode.setEnabled(false);
+        jButtonRemoveNode.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonRemoveNodeActionPerformed(evt);
+            }
+        });
 
         jLabelJsonData.setText("JSON Data");
 
@@ -391,8 +400,14 @@ public class JsonEditorDialog extends javax.swing.JDialog {
         mJsonEditor.makeNewTree(rootNode);
         model.reload();
 
+        setTitle(TITLE);
+        jButtonSave.setEnabled(false);
         jButtonSaveAs.setEnabled(true);
     }//GEN-LAST:event_NewFile_ActionPerformed
+
+    private void jButtonRemoveNodeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRemoveNodeActionPerformed
+        mJsonEditor.removeNode(((DefaultTreeModel) jJsonTree.getModel()), ((DefaultMutableTreeNode) jJsonTree.getLastSelectedPathComponent()));
+    }//GEN-LAST:event_jButtonRemoveNodeActionPerformed
 
     /**
      * @param args the command line arguments

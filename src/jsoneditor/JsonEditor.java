@@ -74,14 +74,18 @@ public class JsonEditor {
     }
 
     public void writeToFile(File file) {
-        try (Writer writer = new FileWriter(file)) {
-            // 4 spaces for indentation, and 0 indentation for root node
-            mJsonObj.write(writer, 4, 0);
-            if (mJsonFile != file) mJsonFile = file;
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(JsonEditor.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(JsonEditor.class.getName()).log(Level.SEVERE, null, ex);
+        if (file != null) {
+            try (Writer writer = new FileWriter(file)) {
+                // 4 spaces for indentation, and 0 indentation for root node
+                mJsonObj.write(writer, 4, 0);
+                if (mJsonFile != file) {
+                    mJsonFile = file;
+                }
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(JsonEditor.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex) {
+                Logger.getLogger(JsonEditor.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
 
@@ -115,43 +119,30 @@ public class JsonEditor {
 
     private void inflate(JSONObject schema, Object json, String tag, DefaultMutableTreeNode node) {
 
-        if (schema.has("$ref")) {
-            String[] tokens = schema.getString("$ref").split("/");
-            if (tokens.length > 2 && tokens[0].equals("#") && tokens[1].equalsIgnoreCase("definitions")) {
-                if (mJsonSchemaDefs == null) {
-                    return;
-                }
-                schema = mJsonSchemaDefs;
-                for (int i = 2; i < tokens.length; i++) {
-                    if (schema.has(tokens[i])) {
-                        schema = schema.getJSONObject(tokens[i]);
+        schema = resolveRefs(schema);
+
+        if (schema != null) {
+            DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(new TreeNodeData(schema, json, tag));
+            node.add(childNode);
+
+            String nodeType = schema.getString("type");
+            if (nodeType.equalsIgnoreCase("object")) {
+                JSONObject prop = schema.getJSONObject("properties");
+                Set<String> keySet = prop.keySet();
+                for (String key : keySet) {
+                    if (!((JSONObject) json).isNull(key)) {
+                        JSONObject schemaVal = prop.getJSONObject(key);
+                        Object jsonVal = ((JSONObject) json).get(key);
+                        inflate(schemaVal, jsonVal, key, childNode);
                     }
                 }
-            }
-        }
-
-        DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(new TreeNodeData(schema, json, tag));
-        node.add(childNode);
-
-        String nodeType = schema.getString("type");
-        if (nodeType.equalsIgnoreCase("object")) {
-            JSONObject prop = schema.getJSONObject("properties");
-            Set<String> keySet = prop.keySet();
-            for (String key : keySet) {
-                if (!((JSONObject) json).isNull(key)) {
-                    JSONObject schemaVal = prop.getJSONObject(key);
-                    Object jsonVal = ((JSONObject) json).get(key);
-                    inflate(schemaVal, jsonVal, key, childNode);
+            } else if (nodeType.equalsIgnoreCase("array")) {
+                JSONObject items = schema.getJSONObject("items");
+                for (int i = 0; i < ((JSONArray) json).length(); i++) {
+                    Object jsonVal = ((JSONArray) json).get(i);
+                    inflate(items, jsonVal, "" + (i + 1), childNode);
                 }
             }
-        } else if (nodeType.equalsIgnoreCase("array")) {
-            JSONObject items = schema.getJSONObject("items");
-            for (int i = 0; i < ((JSONArray) json).length(); i++) {
-                Object jsonVal = ((JSONArray) json).get(i);
-                inflate(items, jsonVal, "" + (i + 1), childNode);
-            }
-        } else if (nodeType.equalsIgnoreCase("string")) {
-        } else if (nodeType.equalsIgnoreCase("integer")) {
         }
     }
 
@@ -160,7 +151,7 @@ public class JsonEditor {
         JSONObject parentSchema = treeNodeData.getSchema();
 
         String parentNodeType = parentSchema.getString("type");
-        if (parentNodeType.equalsIgnoreCase("object")) {        // TODO
+        if (parentNodeType.equalsIgnoreCase("object")) {
             JSONObject jsonData = (JSONObject) treeNodeData.getJsonData();
 
             JSONObject prop = parentSchema.getJSONObject("properties");
@@ -170,35 +161,24 @@ public class JsonEditor {
                     JSONObject value = prop.getJSONObject(key);
                     Object nodeData = null;
 
-                    if (value.has("$ref")) {
-                        String[] tokens = value.getString("$ref").split("/");
-                        if (tokens.length > 2 && tokens[0].equals("#") && tokens[1].equalsIgnoreCase("definitions")) {
-                            if (mJsonSchemaDefs == null) {
-                                break;
-                            }
-                            value = mJsonSchemaDefs;
-                            for (int i = 2; i < tokens.length; i++) {
-                                if (value.has(tokens[i])) {
-                                    value = value.getJSONObject(tokens[i]);
-                                }
-                            }
+                    value = resolveRefs(value);
+
+                    if (value != null) {
+                        String valueType = value.getString("type");
+                        if (valueType.equalsIgnoreCase("integer")) {
+                            nodeData = 0;
+                        } else if (valueType.equalsIgnoreCase("string")) {
+                            nodeData = "";
+                        } else if (valueType.equalsIgnoreCase("object")) {
+                            nodeData = new JSONObject();
+                        } else if (valueType.equalsIgnoreCase("array")) {
+                            nodeData = new JSONArray();
                         }
-                    }
 
-                    String valueType = value.getString("type");
-                    if (valueType.equalsIgnoreCase("integer")) {
-                        nodeData = 0;
-                    } else if (valueType.equalsIgnoreCase("string")) {
-                        nodeData = "";
-                    } else if (valueType.equalsIgnoreCase("object")) {
-                        nodeData = new JSONObject();
-                    } else if (valueType.equalsIgnoreCase("array")) {
-                        nodeData = new JSONArray();
+                        jsonData.put(key, nodeData);
+                        DefaultMutableTreeNode childTreeNode = new DefaultMutableTreeNode(new TreeNodeData(value, nodeData, key));
+                        model.insertNodeInto(childTreeNode, parent, parent.getChildCount());
                     }
-
-                    jsonData.put(key, nodeData);
-                    DefaultMutableTreeNode childTreeNode = new DefaultMutableTreeNode(new TreeNodeData(value, nodeData, key));
-                    model.insertNodeInto(childTreeNode, parent, parent.getChildCount());
                 }
             }
         } else if (parentNodeType.equalsIgnoreCase("array")) {
@@ -223,4 +203,44 @@ public class JsonEditor {
         }
     }
 
+    public void removeNode(DefaultTreeModel model, DefaultMutableTreeNode node) {
+        if (node != null && model != null) {
+            DefaultMutableTreeNode parent = (DefaultMutableTreeNode) node.getParent();
+
+            if (parent != null) {
+                TreeNodeData parentTreeNodeData = (TreeNodeData) parent.getUserObject();
+                JSONObject parentSchema = resolveRefs(parentTreeNodeData.getSchema());
+                String parentNodeType = parentSchema.getString("type");
+                if (parentNodeType.equalsIgnoreCase("object")) {
+                    JSONObject parentNodeData = (JSONObject) parentTreeNodeData.getJsonData();
+                    String key = ((TreeNodeData) node.getUserObject()).getTag();
+                    parentNodeData.remove(key);
+                    model.removeNodeFromParent(node);
+                }/* else if (parentNodeType.equalsIgnoreCase("array")) {
+                    JSONArray parentNodeData = (JSONArray) parentTreeNodeData.getJsonData();
+                }*/
+            }
+        }
+    }
+
+    private JSONObject resolveRefs(JSONObject schema) {
+        if (schema != null && schema.has("$ref")) {
+            if (mJsonSchemaDefs == null) {
+                return null;
+            }
+            String[] tokens = schema.getString("$ref").split("/");
+            if (tokens.length > 2 && tokens[0].equals("#") && tokens[1].equalsIgnoreCase("definitions")) {
+                schema = mJsonSchemaDefs;
+                for (int i = 2; i < tokens.length; i++) {
+                    if (schema.has(tokens[i])) {
+                        schema = schema.getJSONObject(tokens[i]);
+                    } else {
+                        return null;
+                    }
+                }
+            }
+        }
+
+        return schema;
+    }
 }
