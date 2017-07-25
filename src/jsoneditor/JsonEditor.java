@@ -16,6 +16,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -109,6 +110,8 @@ public class JsonEditor {
     private void loadSchema() throws FileNotFoundException, JSONException {
         JSONTokener x = new JSONTokener(new FileInputStream(mJsonSchema));
         mJsonSchemaObj = new JSONObject(x);
+        
+        mJsonObj = null;
 
         if (mJsonSchemaObj.has("definitions")) {
             mJsonSchemaDefs = mJsonSchemaObj.getJSONObject("definitions");
@@ -216,15 +219,20 @@ public class JsonEditor {
                     String key = ((TreeNodeData) node.getUserObject()).getTag();
                     parentNodeData.remove(key);
                     model.removeNodeFromParent(node);
-                }/* else if (parentNodeType.equalsIgnoreCase("array")) {
+                } else if (parentNodeType.equalsIgnoreCase("array")) {
                     JSONArray parentNodeData = (JSONArray) parentTreeNodeData.getJsonData();
-                }*/
+                    String key = ((TreeNodeData) node.getUserObject()).getTag();
+                    final int index = Integer.decode(key) - 1;
+                    parentNodeData.remove(index);
+                    model.removeNodeFromParent(node);
+                    refreshIndices(parent, index);
+                }
             }
         }
     }
 
     private JSONObject resolveRefs(JSONObject schema) {
-        if (schema != null && schema.has("$ref")) {
+        while (schema != null && schema.has("$ref")) {
             if (mJsonSchemaDefs == null) {
                 return null;
             }
@@ -242,5 +250,12 @@ public class JsonEditor {
         }
 
         return schema;
+    }
+
+    private void refreshIndices(DefaultMutableTreeNode parent, int index) {
+        for (int i = index; i < parent.getChildCount(); i++) {
+            DefaultMutableTreeNode childNode = (DefaultMutableTreeNode) parent.getChildAt(i);
+            ((TreeNodeData) childNode.getUserObject()).setTag("" + (i + 1));
+        }
     }
 }

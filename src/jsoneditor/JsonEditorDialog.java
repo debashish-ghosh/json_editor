@@ -176,7 +176,7 @@ public class JsonEditorDialog extends javax.swing.JDialog {
         jButtonRemoveNode.setEnabled(false);
         jButtonRemoveNode.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButtonRemoveNodeActionPerformed(evt);
+                RemoveNode_ActionPerformed(evt);
             }
         });
 
@@ -291,6 +291,12 @@ public class JsonEditorDialog extends javax.swing.JDialog {
                         mJsonEditor = new JsonEditor(file);
                     } else {
                         mJsonEditor.setJsonSchema(file);
+                        DefaultTreeModel model = (DefaultTreeModel) jJsonTree.getModel();
+                        DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) model.getRoot();
+                        if (rootNode != null) {
+                            rootNode.removeAllChildren();
+                            model.reload();
+                        }
                     }
                 } catch (FileNotFoundException ex) {
                     Logger.getLogger(JsonEditorDialog.class.getName()).log(Level.SEVERE, null, ex);
@@ -381,6 +387,13 @@ public class JsonEditorDialog extends javax.swing.JDialog {
                 prefs.put("last_dir_save_as", file.getParent());
                 mJsonEditor.writeToFile(file);
                 jButtonSave.setEnabled(true);
+        {
+            try {
+                setTitle(TITLE + " - " + file.getCanonicalPath());
+            } catch (IOException ex) {
+                Logger.getLogger(JsonEditorDialog.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
                 break;
         }
     }//GEN-LAST:event_SaveAs_ActionPerformed
@@ -400,14 +413,14 @@ public class JsonEditorDialog extends javax.swing.JDialog {
         mJsonEditor.makeNewTree(rootNode);
         model.reload();
 
-        setTitle(TITLE);
+        setTitle(TITLE + " [New File]");
         jButtonSave.setEnabled(false);
         jButtonSaveAs.setEnabled(true);
     }//GEN-LAST:event_NewFile_ActionPerformed
 
-    private void jButtonRemoveNodeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRemoveNodeActionPerformed
+    private void RemoveNode_ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RemoveNode_ActionPerformed
         mJsonEditor.removeNode(((DefaultTreeModel) jJsonTree.getModel()), ((DefaultMutableTreeNode) jJsonTree.getLastSelectedPathComponent()));
-    }//GEN-LAST:event_jButtonRemoveNodeActionPerformed
+    }//GEN-LAST:event_RemoveNode_ActionPerformed
 
     /**
      * @param args the command line arguments
